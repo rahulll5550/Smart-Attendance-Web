@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EmpAttend - Employee Attendance Management System</title>
+  
+  <!-- CDNs for External Libraries -->
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Application CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- App Loading Spinner -->
+  <div id="app-loader">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Background Animated Blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- 1. SIMULATED SECURITY LOGIN PAGE -->
+  <div id="login-page">
+    <div class="login-card glass">
+      <div class="brand-icon" style="margin: 0 auto 16px; width: 48px; height: 48px; font-size: 1.6rem;">A</div>
+      <div class="login-logo">Antigravity Corp</div>
+      <div class="login-subtitle">Attendance Management Portal</div>
+      
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-username"><i class="fa-solid fa-user"></i> Username</label>
+          <input type="text" id="login-username" class="form-control" placeholder="Enter admin username" required autocomplete="username">
+        </div>
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-right-to-bracket"></i> Login
+        </button>
+      </form>
+      <div style="margin-top: 16px; font-size: 0.75rem; color: var(--text-secondary);">
+        Demo access: <strong style="color: var(--text-primary);">admin</strong> / <strong style="color: var(--text-primary);">admin123</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. MAIN APPLICATION WORKSPACE -->
+  <div id="main-app-container" style="display: none;">
+    <!-- Collapsible Sidebar -->
+    <aside class="glass" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">A</div>
+        <div class="brand-name" id="sidebar-company-name">Antigravity Corp</div>
+      </div>
+      
+      <ul class="sidebar-menu">
+        <li class="active" data-tab="dashboard">
+          <a role="button"><i class="fa-solid fa-chart-line"></i><span>Dashboard</span></a>
+        </li>
+        <li data-tab="employees">
+          <a role="button"><i class="fa-solid fa-users"></i><span>Employees</span></a>
+        </li>
+        <li data-tab="attendance">
+          <a role="button"><i class="fa-solid fa-calendar-check"></i><span>Daily Attendance</span></a>
+        </li>
+        <li data-tab="leaves">
+          <a role="button"><i class="fa-solid fa-clipboard-question"></i><span>Leave Approvals</span></a>
+        </li>
+        <li data-tab="reports">
+          <a role="button"><i class="fa-solid fa-file-invoice-dollar"></i><span>Reports & Export</span></a>
+        </li>
+        <li data-tab="settings">
+          <a role="button"><i class="fa-solid fa-sliders"></i><span>Settings</span></a>
+        </li>
+      </ul>
+      
+      <div class="sidebar-footer">
+        <a class="logout-btn" id="logout-trigger" role="button">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main>
+      <!-- Top Navbar Header -->
+      <header>
+        <div class="header-left">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-bars hamburger" id="mobile-menu-toggle"></i>
+            <h1 class="header-title" id="page-title">Dashboard Overview</h1>
+          </div>
+          <span class="header-subtitle" id="page-subtitle">Real-time stats and metrics at a glance</span>
+        </div>
+        
+        <div class="header-right">
+          <!-- Real-Time Digital Clock -->
+          <div class="realtime-clock" id="live-clock">00:00:00 AM</div>
+          
+          <div class="header-actions">
+            <!-- Notifications Ticker / Anniversary Alert Dropdown -->
+            <div class="action-icon" id="birthday-alerts-toggle">
+              <i class="fa-solid fa-cake-candles"></i>
+              <span class="badge-dot" id="birthday-alert-dot" style="display: none;"></span>
+            </div>
+            
+            <!-- Dark / Light Theme Switching Toggle -->
+            <div class="action-icon" id="theme-toggle">
+              <i class="fa-solid fa-moon"></i>
+            </div>
+          </div>
+          
+          <!-- Admin User Badge -->
+          <div class="admin-profile">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256" alt="Company Logo" class="admin-avatar" id="app-company-logo">
+            <div class="admin-info">
+              <span class="admin-name">Administrator</span>
+              <span class="admin-role">System Admin</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- VIEW 1: DASHBOARD -->
+      <section id="view-dashboard" class="view-section active">
+        <!-- Top Stats Cards Grid -->
+        <div class="dashboard-grid">
+          <!-- Total Employees -->
+          <div class="stat-card glass">
+            <div class="stat-info">
+              <span class="stat-label">Total Employees</span>
+              <span class="stat-value" id="dash-total-emp">0</span>
+              <span class="stat-trend"><i class="fa-solid fa-user-tag"></i> Active Staff</span>
+            </div>
+            <div class="stat-icon bg-blue">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+          <!-- Present Today -->
+          <div class="stat-card glass">
+            <div class="stat-info">
+              <span class="stat-label">Present Today</span>
+              <span class="stat-value" id="dash-present-today">0</span>
+              <span class="stat-trend up" id="dash-present-trend"><i class="fa-solid fa-circle-check"></i> On Duty</span>
+            </div>
+            <div class="stat-icon bg-green">
+              <i class="fa-solid fa-circle-user"></i>
+            </div>
+          </div>
+          <!-- Absent Today -->
+          <div class="stat-card glass">
+            <div class="stat-info">
+              <span class="stat-label">Absent Today</span>
+              <span class="stat-value" id="dash-absent-today">0</span>
+              <span class="stat-trend down" id="dash-absent-trend"><i class="fa-solid fa-triangle-exclamation"></i> Out of Office</span>
+            </div>
+            <div class="stat-icon bg-red">
+              <i class="fa-solid fa-user-minus"></i>
+            </div>
+          </div>
+          <!-- Late Logins -->
+          <div class="stat-card glass">
+            <div class="stat-info">
+              <span class="stat-label">Late Entries</span>
+              <span class="stat-value" id="dash-late-today">0</span>
+              <span class="stat-trend" id="dash-late-trend" style="color: var(--color-late)"><i class="fa-solid fa-clock"></i> Over Grace Time</span>
+            </div>
+            <div class="stat-icon bg-orange">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Stats Summary Row -->
+        <div class="summary-container">
+          <div class="summary-card-mini glass">
+            <div class="label">Attendance rate</div>
+            <div class="val" id="dash-att-percentage" style="color: var(--color-present)">0%</div>
+          </div>
+          <div class="summary-card-mini glass">
+            <div class="label">Work From Home</div>
+            <div class="val" id="dash-wfh-today" style="color: var(--color-wfh)">0</div>
+          </div>
+          <div class="summary-card-mini glass">
+            <div class="label">Approved Leave</div>
+            <div class="val" id="dash-leave-today" style="color: var(--color-leave)">0</div>
+          </div>
+          <div class="summary-card-mini glass">
+            <div class="label">Half Day</div>
+            <div class="val" id="dash-halfday-today" style="color: var(--color-halfday)">0</div>
+          </div>
+        </div>
+
+        <!-- Attendance Charts Containers -->
+        <div class="charts-grid">
+          <!-- Graph 1: Attendance Trends (Bar Chart) -->
+          <div class="chart-box glass">
+            <div class="chart-title">
+              <span>Attendance Rate (Last 7 Days)</span>
+              <i class="fa-solid fa-chart-bar" style="color: var(--accent)"></i>
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="chart-attendance-trend"></canvas>
+            </div>
+          </div>
+          
+          <!-- Graph 2: Today's Status Breakdown (Doughnut) -->
+          <div class="chart-box glass">
+            <div class="chart-title">
+              <span>Today's Distribution</span>
+              <i class="fa-solid fa-chart-pie" style="color: var(--accent)"></i>
+            </div>
+            <div class="chart-canvas-container">
+              <canvas id="chart-status-pie"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Grid: Reminders and Audit Logs -->
+        <div class="dashboard-details-grid">
+          <!-- Left: Recent Activities log -->
+          <div class="details-box glass">
+            <div class="details-title">
+              <i class="fa-solid fa-clipboard-list" style="margin-right: 8px;"></i> Recent Activity Log
+            </div>
+            <div class="details-list" id="activity-log-list">
+              <!-- Rendered Dynamically -->
+            </div>
+          </div>
+          
+          <!-- Right: Birthdays & Anniversaries Ticker -->
+          <div class="details-box glass">
+            <div class="details-title">
+              <i class="fa-solid fa-gift" style="margin-right: 8px;"></i> Reminders & Special Occasions
+            </div>
+            <div class="details-list" id="reminder-log-list">
+              <!-- Rendered Dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: EMPLOYEE MANAGEMENT -->
+      <section id="view-employees" class="view-section">
+        <!-- Controls Filter Panel -->
+        <div class="glass" style="padding: 20px; margin-bottom: 24px;">
+          <div class="table-header-controls">
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; flex-grow: 1;">
+              <div class="search-box-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-emp-input" class="form-control" placeholder="Search by name or ID...">
+              </div>
+              
+              <div style="min-width: 160px;">
+                <select id="filter-emp-dept" class="form-control">
+                  <option value="">All Departments</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+
+              <div style="min-width: 140px;">
+                <select id="filter-emp-status" class="form-control">
+                  <option value="">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            
+            <button class="btn btn-primary" id="add-employee-trigger" style="width: auto;">
+              <i class="fa-solid fa-user-plus"></i> Add Employee
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Listing -->
+        <div class="glass" style="padding: 24px;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th onclick="sortTable('employees', 0)">Employee ID <i class="fa-solid fa-sort"></i></th>
+                  <th onclick="sortTable('employees', 1)">Full Name <i class="fa-solid fa-sort"></i></th>
+                  <th onclick="sortTable('employees', 2)">Department <i class="fa-solid fa-sort"></i></th>
+                  <th onclick="sortTable('employees', 3)">Designation <i class="fa-solid fa-sort"></i></th>
+                  <th>Contact Info</th>
+                  <th onclick="sortTable('employees', 5)">Joining Date <i class="fa-solid fa-sort"></i></th>
+                  <th onclick="sortTable('employees', 6)">Status <i class="fa-solid fa-sort"></i></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="employees-table-body">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="pagination-container">
+            <span class="pagination-info" id="emp-pagination-info">Showing 1 to 5 of 5 entries</span>
+            <div class="pagination-buttons" id="emp-pagination-buttons">
+              <!-- Buttons rendered dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: DAILY ATTENDANCE LOGGER -->
+      <section id="view-attendance" class="view-section">
+        <!-- Sub navigation tabs -->
+        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+          <button class="btn btn-primary" id="att-tab-sheet" style="width: auto;">Mark Daily Sheet</button>
+          <button class="btn btn-secondary" id="att-tab-calendar" style="width: auto;">Attendance Calendar View</button>
+        </div>
+
+        <!-- Pane 1: Daily Sheet Logger -->
+        <div id="att-sheet-pane">
+          <!-- Date filter & counters panel -->
+          <div class="glass" style="padding: 24px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <label for="attendance-date-select" style="font-weight: 600;"><i class="fa-solid fa-calendar-days"></i> Select Date:</label>
+                <input type="date" id="attendance-date-select" class="form-control" style="width: auto;">
+              </div>
+
+              <!-- Mini Summary widgets -->
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;" id="att-sheet-counters">
+                <span class="badge badge-present">Present: <strong id="att-cnt-present">0</strong></span>
+                <span class="badge badge-absent">Absent: <strong id="att-cnt-absent">0</strong></span>
+                <span class="badge badge-halfday">Half Day: <strong id="att-cnt-halfday">0</strong></span>
+                <span class="badge badge-leave">Leave: <strong id="att-cnt-leave">0</strong></span>
+                <span class="badge badge-wfh">WFH: <strong id="att-cnt-wfh">0</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bulk application drawer -->
+          <div class="bulk-selection-bar" id="bulk-attendance-bar" style="display: none;">
+            <div>
+              <i class="fa-solid fa-circle-exclamation"></i>
+              <span id="bulk-select-count">0 employees selected</span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-left: auto;">
+              <select id="bulk-status-apply" class="form-control" style="padding: 6px 12px; font-size: 0.85rem; width: 140px;">
+                <option value="">Set Status...</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Half Day">Half Day</option>
+                <option value="Leave">Leave</option>
+                <option value="WFH">Work From Home</option>
+              </select>
+              <button class="btn btn-primary" id="btn-apply-bulk" style="padding: 6px 16px; font-size: 0.85rem; width: auto;">Apply Status</button>
+              <button class="btn btn-secondary" id="btn-cancel-bulk" style="padding: 6px 12px; font-size: 0.85rem; width: auto;">Clear</button>
+            </div>
+          </div>
+
+          <!-- Attendance Table -->
+          <div class="glass" style="padding: 24px;">
+            <div class="table-responsive">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="select-all-att-checkbox"></th>
+                    <th>Employee Info</th>
+                    <th>Attendance Status</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Notes / Reason</th>
+                    <th>Flags</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-table-body">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+              <button class="btn btn-primary" id="save-attendance-btn" style="width: auto;">
+                <i class="fa-solid fa-floppy-disk"></i> Save Daily Attendance Sheet
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pane 2: Calendar Monthly Tracker View -->
+        <div id="att-calendar-pane" class="glass" style="padding: 24px; display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <div style="min-width: 200px;">
+                <label for="att-calendar-emp-select" style="font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 4px;">Employee</label>
+                <select id="att-calendar-emp-select" class="form-control">
+                  <option value="">Select Employee...</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label for="att-calendar-month-select" style="font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 4px;">Month</label>
+                <select id="att-calendar-month-select" class="form-control" style="width: auto;">
+                  <option value="0">January</option>
+                  <option value="1">February</option>
+                  <option value="2">March</option>
+                  <option value="3">April</option>
+                  <option value="4">May</option>
+                  <option value="5">June</option>
+                  <option value="6">July</option>
+                  <option value="7">August</option>
+                  <option value="8">September</option>
+                  <option value="9">October</option>
+                  <option value="10">November</option>
+                  <option value="11">December</option>
+                </select>
+              </div>
+              <div>
+                <label for="att-calendar-year-select" style="font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 4px;">Year</label>
+                <input type="number" id="att-calendar-year-select" class="form-control" style="width: 100px;" min="2020" max="2030">
+              </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; font-size: 0.8rem;">
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle" style="color: var(--color-present);"></i> Present</span>
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle" style="color: var(--color-absent);"></i> Absent</span>
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle" style="color: var(--color-halfday);"></i> HalfDay</span>
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle" style="color: var(--color-leave);"></i> Leave</span>
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle" style="color: var(--color-wfh);"></i> WFH</span>
+            </div>
+          </div>
+
+          <div class="calendar-grid-header">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+          <div class="calendar-grid-days" id="calendar-days-container">
+            <!-- Calendar days rendered here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: LEAVE APPROVALS & BALANCES -->
+      <section id="view-leaves" class="view-section">
+        <!-- Sub navigation tabs -->
+        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+          <button class="btn btn-primary" id="leave-tab-requests" style="width: auto;">Leave Requests Queue</button>
+          <button class="btn btn-secondary" id="leave-tab-balances" style="width: auto;">Leave Balances Matrix</button>
+        </div>
+
+        <!-- Content Area A: Leave requests queue -->
+        <div id="leave-queue-pane" class="glass" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <h3 class="modal-title">Leave Request List</h3>
+            <button class="btn btn-primary" id="apply-leave-trigger" style="width: auto;">
+              <i class="fa-solid fa-paper-plane"></i> Apply for Leave
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th onclick="sortTable('leaves', 0)">ID <i class="fa-solid fa-sort"></i></th>
+                  <th onclick="sortTable('leaves', 1)">Employee <i class="fa-solid fa-sort"></i></th>
+                  <th onclick="sortTable('leaves', 2)">Leave Type <i class="fa-solid fa-sort"></i></th>
+                  <th>Duration Range</th>
+                  <th>Reason</th>
+                  <th>Applied Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leaves-table-body">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Content Area B: Leave Balance Matrix -->
+        <div id="leave-matrix-pane" class="glass" style="padding: 24px; display: none;">
+          <h3 class="modal-title" style="margin-bottom: 20px;">Staff Leave Allotments</h3>
+          
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 20px;">
+            <label for="leave-balance-emp-select" style="font-weight: 600;">Check Employee Balances:</label>
+            <select id="leave-balance-emp-select" class="form-control" style="width: 250px;">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <div class="leave-matrix" id="leave-balance-matrix-grid">
+            <!-- Rendered Dynamically -->
+          </div>
+
+          <h4 style="margin-bottom: 12px; font-family: var(--font-title);">History of Approved/Pending Leaves for Selected Staff</h4>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Leave Type</th>
+                  <th>Date From - To</th>
+                  <th>Total Days</th>
+                  <th>Reason</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="leave-emp-history-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Select an employee to check records history.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: REPORTS & EXPORTS -->
+      <section id="view-reports" class="view-section">
+        <!-- Selection filter parameters -->
+        <div class="glass" style="padding: 24px; margin-bottom: 24px;">
+          <form id="report-query-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="report-type-select">Report Scope</label>
+                <select id="report-type-select" class="form-control" required>
+                  <option value="daily">Daily Attendance Summary</option>
+                  <option value="range">Date Range Ledger</option>
+                  <option value="employee">Individual Employee Ledger</option>
+                  <option value="department">Department-wise Summary</option>
+                </select>
+              </div>
+
+              <!-- Conditional fields -->
+              <div class="form-group" id="report-emp-wrapper" style="display: none;">
+                <label for="report-employee-select">Employee</label>
+                <select id="report-employee-select" class="form-control">
+                  <!-- Rendered dynamically -->
+                </select>
+              </div>
+
+              <div class="form-group" id="report-dept-wrapper" style="display: none;">
+                <label for="report-department-select">Department</label>
+                <select id="report-department-select" class="form-control">
+                  <!-- Rendered dynamically -->
+                </select>
+              </div>
+
+              <div class="form-group" id="report-start-date-wrapper">
+                <label for="report-start-date">Start Date</label>
+                <input type="date" id="report-start-date" class="form-control" required>
+              </div>
+
+              <div class="form-group" id="report-end-date-wrapper" style="display: none;">
+                <label for="report-end-date">End Date</label>
+                <input type="date" id="report-end-date" class="form-control">
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+              <button type="submit" class="btn btn-primary" style="width: auto;">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Generate Report
+              </button>
+              
+              <div style="margin-left: auto; display: flex; gap: 10px;" id="report-export-actions">
+                <button type="button" class="btn btn-secondary" id="export-excel-btn" style="width: auto;" disabled>
+                  <i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Export Excel (.xlsx)
+                </button>
+                <button type="button" class="btn btn-secondary" id="export-pdf-btn" style="width: auto;" disabled>
+                  <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Export PDF
+                </button>
+                <button type="button" class="btn btn-secondary" id="print-report-btn" style="width: auto;" disabled>
+                  <i class="fa-solid fa-print"></i> Print
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Rendered Results -->
+        <div class="glass" style="padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 class="modal-title" id="report-results-title">Report Summary</h3>
+            <span id="report-results-metadata" style="font-size: 0.85rem; color: var(--text-secondary);">Query status: Idle</span>
+          </div>
+
+          <div class="table-responsive">
+            <table id="reports-output-table">
+              <!-- Headers and bodies generated dynamically based on query style -->
+              <thead>
+                <tr><th>Execute query above to display list.</th></tr>
+              </thead>
+              <tbody>
+                <tr><td style="text-align: center; color: var(--text-muted); padding: 40px 0;">No active query loaded.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: SETTINGS & BACKUPS -->
+      <section id="view-settings" class="view-section">
+        <div class="form-grid">
+          <!-- Column 1: Config rules -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- Company Profile Settings -->
+            <div class="glass settings-section-card">
+              <h3 class="settings-section-title"><i class="fa-solid fa-building"></i> Company Profile</h3>
+              
+              <div class="form-group">
+                <label for="settings-company-name">Company Display Name</label>
+                <input type="text" id="settings-company-name" class="form-control" value="Antigravity Corp">
+              </div>
+
+              <!-- Base64 Logo upload -->
+              <div class="form-group">
+                <label>Company Logo</label>
+                <div class="photo-upload-container">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256" alt="Upload logo preview" class="upload-preview" id="company-logo-preview">
+                  <div class="upload-actions">
+                    <input type="file" id="settings-company-logo-file" accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('settings-company-logo-file').click()">Select Logo Image</button>
+                    <span style="font-size: 0.7rem; color: var(--text-muted);">Max 500kb. Suggested: Square aspect.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Department & Designation lists -->
+              <div style="display: flex; gap: 12px; margin-top: 10px;">
+                <button type="button" class="btn btn-secondary" id="manage-departments-btn"><i class="fa-solid fa-network-wired"></i> Manage Departments</button>
+              </div>
+            </div>
+
+            <!-- Shifts Timing Rules -->
+            <div class="glass settings-section-card">
+              <h3 class="settings-section-title"><i class="fa-solid fa-clock"></i> Working Hours & Late Rules</h3>
+              
+              <div class="form-grid" style="margin-bottom: 16px;">
+                <div class="form-group">
+                  <label for="settings-shift-start">Office Start Time</label>
+                  <input type="time" id="settings-shift-start" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label for="settings-shift-end">Office End Time</label>
+                  <input type="time" id="settings-shift-end" class="form-control">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="settings-grace-period">Late Grace Period (Minutes)</label>
+                <input type="number" id="settings-grace-period" class="form-control" min="0" max="60">
+              </div>
+
+              <!-- Weekend Days toggles -->
+              <div class="form-group">
+                <label>Weekly Holiday Weekend Toggles</label>
+                <div class="weekend-checkboxes">
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="0"> Sunday
+                  </label>
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="1"> Monday
+                  </label>
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="2"> Tuesday
+                  </label>
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="3"> Wednesday
+                  </label>
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="4"> Thursday
+                  </label>
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="5"> Friday
+                  </label>
+                  <label class="weekend-checkbox-item">
+                    <input type="checkbox" name="settings-weekend" value="6"> Saturday
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: System admin, backups -->
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            <!-- System Admin Authentication config -->
+            <div class="glass settings-section-card">
+              <h3 class="settings-section-title"><i class="fa-solid fa-user-shield"></i> Portal Admin Password</h3>
+              
+              <div class="form-group">
+                <label for="settings-admin-username">Admin Username</label>
+                <input type="text" id="settings-admin-username" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="settings-admin-password">New Admin Password</label>
+                <input type="password" id="settings-admin-password" class="form-control" placeholder="Update password text">
+              </div>
+            </div>
+
+            <!-- Database Backup and Restore -->
+            <div class="glass settings-section-card">
+              <h3 class="settings-section-title"><i class="fa-solid fa-database"></i> Database Management & Backup</h3>
+              
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4;">
+                This system runs entirely on client local storage cache. Export backups regularly to save records data safely or load them back in on another machine.
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button type="button" class="btn btn-secondary" id="btn-export-backup" style="justify-content: flex-start; text-align: left;">
+                  <i class="fa-solid fa-download" style="color: var(--accent);"></i>
+                  <div>
+                    <div style="font-weight: 600;">Download JSON Backup</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Saves employee roster logs, settings and sheets.</div>
+                  </div>
+                </button>
+
+                <button type="button" class="btn btn-secondary" id="btn-import-backup-trigger" style="justify-content: flex-start; text-align: left;" onclick="document.getElementById('settings-restore-file').click()">
+                  <i class="fa-solid fa-upload" style="color: var(--color-leave);"></i>
+                  <div>
+                    <div style="font-weight: 600;">Restore Database Backup</div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Upload .json database file to overwrite state cache.</div>
+                  </div>
+                </button>
+                <input type="file" id="settings-restore-file" accept=".json" style="display: none;">
+
+                <button type="button" class="btn btn-danger" id="btn-reset-db" style="justify-content: flex-start; text-align: left; margin-top: 10px;">
+                  <i class="fa-solid fa-trash-arrow-up"></i>
+                  <div>
+                    <div style="font-weight: 600; color: white;">Factory Reset Database</div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.7);">Wipes database and generates default mock parameters.</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="button" class="btn btn-primary" id="save-settings-btn" style="width: auto;">
+                <i class="fa-solid fa-check"></i> Save Portal Preferences
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ==================== DIALOG MODALS ==================== -->
+
+  <!-- Modal A: Add / Edit Employee Form -->
+  <div class="modal-overlay" id="employee-modal">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3 class="modal-title" id="employee-modal-title">Add New Employee</h3>
+        <button class="modal-close" onclick="closeModal('employee-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="employee-form">
+        <input type="hidden" id="employee-form-id">
+        
+        <div class="photo-upload-container">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256" alt="Preview avatar" class="upload-preview" id="employee-photo-preview">
+          <div class="upload-actions">
+            <input type="file" id="employee-photo-file" accept="image/*" style="display: none;">
+            <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="document.getElementById('employee-photo-file').click()">Upload Profile Photo</button>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Max 500kb. Suggested: Square aspect portrait.</span>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="employee-name">Full Name *</label>
+            <input type="text" id="employee-name" class="form-control" placeholder="Jane Doe" required>
+          </div>
+          <div class="form-group">
+            <label for="employee-email">Email Address *</label>
+            <input type="email" id="employee-email" class="form-control" placeholder="jane@antigravity.corp" required>
+          </div>
+          <div class="form-group">
+            <label for="employee-phone">Phone Number *</label>
+            <input type="tel" id="employee-phone" class="form-control" placeholder="+1 (555) 000-0000" required>
+          </div>
+          <div class="form-group">
+            <label for="employee-dob">Date of Birth *</label>
+            <input type="date" id="employee-dob" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="employee-dept">Department *</label>
+            <select id="employee-dept" class="form-control" required>
+              <option value="">Select Department...</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="employee-designation">Designation *</label>
+            <select id="employee-designation" class="form-control" required disabled>
+              <option value="">Select Department first...</option>
+              <!-- Populated dynamically based on department -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="employee-joining">Joining Date *</label>
+            <input type="date" id="employee-joining" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="employee-status">Roster Status</label>
+            <select id="employee-status" class="form-control">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" style="width: auto;" onclick="closeModal('employee-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="width: auto;" id="employee-submit-btn">Save Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal B: Apply Leave Form -->
+  <div class="modal-overlay" id="leave-modal">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3 class="modal-title">Apply for Leave</h3>
+        <button class="modal-close" onclick="closeModal('leave-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="leave-form">
+        <div class="form-group">
+          <label for="leave-emp-select">Select Employee *</label>
+          <select id="leave-emp-select" class="form-control" required>
+            <option value="">Select Employee...</option>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="leave-type">Leave Type *</label>
+            <select id="leave-type" class="form-control" required>
+              <option value="Casual">Casual Leave</option>
+              <option value="Sick">Sick Leave</option>
+              <option value="Paid">Paid Vacation</option>
+              <option value="Unpaid">Unpaid Leave</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <div style="display: flex; gap: 10px;">
+              <div style="flex: 1;">
+                <label for="leave-start-date">From *</label>
+                <input type="date" id="leave-start-date" class="form-control" required>
+              </div>
+              <div style="flex: 1;">
+                <label for="leave-end-date">To *</label>
+                <input type="date" id="leave-end-date" class="form-control" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+          <label for="leave-reason">Reason/Notes *</label>
+          <textarea id="leave-reason" class="form-control" rows="3" placeholder="Provide description..." required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" style="width: auto;" onclick="closeModal('leave-modal')">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="width: auto;">Submit Leave Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal C: Confirmation Dialog Modal (Generic) -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-content glass" style="max-width: 400px; text-align: center;">
+      <div class="modal-header" style="border: none; margin-bottom: 10px;">
+        <h3 class="modal-title" style="width: 100%;" id="confirm-title">Are you sure?</h3>
+      </div>
+      <p id="confirm-message" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.4; margin-bottom: 24px;">
+        This action cannot be undone.
+      </p>
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button class="btn btn-secondary" id="confirm-cancel-btn" style="width: auto; padding: 10px 20px;">Cancel</button>
+        <button class="btn btn-primary" id="confirm-ok-btn" style="width: auto; padding: 10px 20px;">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal D: Manage Departments -->
+  <div class="modal-overlay" id="dept-modal">
+    <div class="modal-content glass" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Manage Departments</h3>
+        <button class="modal-close" onclick="closeModal('dept-modal')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Create Department</h4>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="new-dept-input" class="form-control" placeholder="e.g. Legal">
+          <button class="btn btn-primary" id="btn-add-dept" style="width: auto; white-space: nowrap;">Create</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Add Designation to Department</h4>
+        <div class="form-grid" style="gap: 10px; margin-bottom: 8px;">
+          <select id="add-desig-dept-select" class="form-control">
+            <!-- Populated dynamically -->
+          </select>
+          <input type="text" id="new-desig-input" class="form-control" placeholder="e.g. Advisor">
+        </div>
+        <button class="btn btn-secondary" id="btn-add-desig" style="width: 100%;">Add Designation</button>
+      </div>
+
+      <div>
+        <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Current Hierarchy</h4>
+        <div style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border-glass); border-radius: var(--radius-sm); padding: 12px; background: var(--bg-input);" id="dept-list-display">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-primary" style="width: auto;" onclick="closeModal('dept-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal E: Upcoming Birthdays List dropdown menu content container -->
+  <div id="birthday-alerts-dropdown" class="glass" style="position: absolute; display: none; width: 300px; max-height: 350px; overflow-y: auto; padding: 16px; z-index: 1001; top: 75px; right: 90px; box-shadow: var(--shadow-hover);">
+    <h4 style="font-size: 0.9rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-soft); padding-bottom: 6px; font-family: var(--font-title);"><i class="fa-solid fa-bell"></i> Alerts & Reminders</h4>
+    <div id="dropdown-alerts-list" style="display: flex; flex-direction: column; gap: 10px;">
+      <!-- Alerts populated here -->
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container"></div>
+
+  <!-- ==================== SCRIPT LOADS ==================== -->
+  
+  <!-- SheetJS Excel Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  
+  <!-- jsPDF & AutoTable Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  
+  <!-- Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Core Database Access Layer -->
+  <script src="js/database.js"></script>
+  
+  <!-- Main Application Controller Logic -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
